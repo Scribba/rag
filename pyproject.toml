@@ -10,4 +10,9 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = []
+dev = [
+    "mypy>=1.10,<2.0",
+]
+
+[tool.mypy]
+strict = true
