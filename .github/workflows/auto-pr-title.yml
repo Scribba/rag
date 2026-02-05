@@ -1,0 +1,65 @@
+name: Auto set PR title from branch
+
+on:
+  pull_request_target:
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  set-title:
+    name: Derive title from branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set PR title based on branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const branch = pr.head.ref || "";
+            const currentTitle = (pr.title || "").trim();
+            if (!branch) {
+              core.info("No branch ref found; skipping.");
+              return;
+            }
+
+            function humanizeBranch(ref) {
+              let b = String(ref);
+              // Strip common type prefixes once
+              b = b.replace(/^(feature|feat|fix|bugfix|hotfix|chore|refactor|docs|test|ci|build|release)[\/\-]/i, "");
+
+              // Extract GH issue token anywhere in the branch name, like gh-00123
+              let issuePart = "";
+              const m = b.match(/gh-0*([0-9]+)/i);
+              if (m) {
+                issuePart = `GH-${Number(m[1])}: `;
+                b = b.replace(m[0], "");
+              }
+
+              // Normalize separators and whitespace
+              b = b.replace(/[_-]+/g, " ").replace(/[\s]+/g, " ").trim();
+
+              // Capitalize words (simple title case)
+              b = b.split(" ").filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+
+              const result = (issuePart + b).trim();
+              // Fallback to original ref if nothing remains
+              return result || ref;
+            }
+
+            const proposed = humanizeBranch(branch);
+
+            // Only set the title if the current title is empty or equals the branch name
+            if (!currentTitle || currentTitle === branch) {
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                title: proposed,
+              });
+              core.info(`PR title updated to: ${proposed}`);
+            } else {
+              core.info("Skipping title update; PR has a custom title.");
+            }
+
