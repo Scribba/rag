@@ -20,7 +20,5 @@ class Graph:
 
     def invoke(self, messages: list[dict], user_profile: dict) -> str:
         initial_state = ConversationState(messages=messages, user_profile=user_profile)
-        for msg in initial_state["messages"]:
-            print(msg["content"])
         result = self.graph.invoke(initial_state)
         return result["response"]

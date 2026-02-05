@@ -24,10 +24,6 @@ class UserProfile:
         return cls(**data, id=id)
 
     def save(self, engine: Engine | None = None) -> int:
-        """
-        Insert or update profile using engine.
-        Jeśli engine == None, używa globalnego engine z db_utils.
-        """
         engine = engine or get_engine()
         with engine.begin() as conn:
             if self.id is None:
