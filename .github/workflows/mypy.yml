@@ -25,6 +25,5 @@ jobs:
       - name: Sync dependencies (including dev)
         run: uv sync --group dev
 
-      - name: Run mypy
-        run: uv run mypy .
-
+      - name: Run mypy via doit
+        run: uv run doit mypy
