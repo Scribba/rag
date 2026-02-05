@@ -1,5 +1,7 @@
 from typing import TypedDict, Annotated
 
+import os
+import sqlite3
 import uuid
 from langchain.chat_models import init_chat_model
 from langchain_core.messages.utils import (
@@ -7,12 +9,13 @@ from langchain_core.messages.utils import (
     count_tokens_approximately,
 )
 from langchain_core.messages import HumanMessage, BaseMessage
-from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import START, END, StateGraph
 from langgraph.graph.message import add_messages
 
 
-checkpointer = InMemorySaver()
+_DB_PATH = os.path.join(os.path.dirname(__file__), "db.sqlite3")
+checkpointer = SqliteSaver(sqlite3.connect(_DB_PATH, check_same_thread=False))
 
 
 class ConversationState(TypedDict, total=False):
