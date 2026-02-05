@@ -1,0 +1,32 @@
+  name: Auto link PR to issue from title
+  on:
+    pull_request_target:
+      types: [opened, edited, reopened]
+  permissions:
+    pull-requests: write
+
+  jobs:
+    link:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/github-script@v7
+          with:
+            script: |
+              const pr = context.payload.pull_request;
+              const title = pr.title || "";
+              const m = title.match(/^gh-0*([0-9]+)\b/i);
+              if (!m) return;
+              const issue = Number(m[1]);
+              const keyword = "Closes"; // change to "Refs" for non-closing
+              let body = pr.body || "";
+              const start = "<!-- autolink:issue -->";
+              const end = "<!-- /autolink:issue -->";
+              const block = `${start}\n${keyword} #${issue}\n${end}`;
+              const re = new RegExp(`${start}[\\s\\S]*?${end}`);
+              body = re.test(body) ? body.replace(re, block) : (body ? body + "\n\n" : "") + block;
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                body
+              });
