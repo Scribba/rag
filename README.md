@@ -16,3 +16,14 @@ The project is configured with `pyproject.toml` and works best with `uv`.
 - Runtime deps: `uv add <package>`
 - Dev-only deps: `uv add --group dev <package>`
 - Remove: `uv remove <package>`
+
+## Pre-commit Hooks
+
+Enable Git hooks to catch common issues before committing.
+
+- Install dev tools (once): `uv sync --group dev`
+- Install hooks: `uv run pre-commit install`
+- Run on all files (optional): `uv run pre-commit run --all-files`
+
+Configuration: `.pre-commit-config.yaml`. To upgrade hooks later, run
+`uv run pre-commit autoupdate`.
