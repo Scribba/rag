@@ -54,7 +54,7 @@ def _clean_coverage_artifacts() -> None:
 
 def _has_module(name: str) -> bool:
     try:
-        import importlib.util as _iu  # type: ignore
+        import importlib.util as _iu
 
         return _iu.find_spec(name) is not None
     except Exception:
