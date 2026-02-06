@@ -41,7 +41,7 @@ jobs:
               b = b.replace(/[_-]+/g, " ").replace(/[\s]+/g, " ").trim();
 
               // Capitalize words (simple title case)
-              b = b.split(" ").filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+              b = b.split(" ").filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join("-");
 
               const result = (issuePart + b).trim();
               // Fallback to original ref if nothing remains

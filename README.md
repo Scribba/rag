@@ -27,3 +27,15 @@ Enable Git hooks to catch common issues before committing.
 
 Configuration: `.pre-commit-config.yaml`. To upgrade hooks later, run
 `uv run pre-commit autoupdate`.
+
+## CI tasks (doit)
+
+The workflow `.github/workflows/push-to-main.yml` runs checks.
+
+- tests: `uv run doit test`
+- mypy: `uv run mypy .`
+
+Run locally to mirror CI:
+- Install dev tools: `uv sync --group dev`
+- Run tests: `uv run doit test`
+- Run mypy: `uv run mypy .`
