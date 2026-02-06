@@ -1,41 +1,27 @@
-"""Project tasks for doit.
+"""Doit tasks for this repository.
 
-Initial task set includes a `mypy` type-check task.
+Includes an initial task to run unit tests.
 
 Usage:
-- With uv: `uv run doit mypy`
-- Without uv: activate your venv and run `doit mypy`
+- `uv run doit test` (recommended with uv)
+- Or activate your venv and run `doit test`
 """
 
 from __future__ import annotations
-
-import os
-import subprocess
-import sys
 from typing import Dict
 
 
-def _ensure_pythonpath(env: dict[str, str]) -> dict[str, str]:
-    env = dict(env)
-    src_abs = os.path.abspath("src")
-    current = env.get("PYTHONPATH", "")
-    env["PYTHONPATH"] = os.pathsep.join([src_abs, current]) if current else src_abs
-    return env
-
-
-def run_mypy() -> None:
-    env = _ensure_pythonpath(os.environ.copy())
-    cmd = [sys.executable, "-m", "mypy", "."]
-    proc = subprocess.run(cmd, env=env)
-    if proc.returncode != 0:
-        raise SystemExit(proc.returncode)
+def task_test() -> Dict[str, object]:
+    return {
+        "actions": ["uv run pytest"],
+        "verbosity": 2,
+        "doc": "Run unit tests (pytest preferred)",
+    }
 
 
 def task_mypy() -> Dict[str, object]:
-    """Type-check the repository with mypy."""
     return {
-        "actions": [run_mypy],
+        "actions": ["uv run mypy ."],
         "verbosity": 2,
         "doc": "Run mypy type checks",
     }
-
