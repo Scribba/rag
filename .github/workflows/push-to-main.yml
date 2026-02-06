@@ -1,12 +1,12 @@
-name: Type Check (mypy)
+name: Push to main
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
-  mypy:
-    name: Run mypy
+  tests:
+    name: Doit tasks
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -25,6 +25,8 @@ jobs:
       - name: Sync dependencies (including dev)
         run: uv sync --group dev
 
-      - name: Run mypy
-        run: uv run mypy .
+      - name: Run unit tests (doit)
+        run: uv run doit test
 
+      - name: Run mypy
+        run: uv run doit mypy
