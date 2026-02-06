@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 from src.database.utils import get_engine
 from src.database.models import conversations
-from src.graph import Graph
+from src.graphs.simple_generation_graph import SimpleGenerationGraph
 from src.user_profile import UserProfile
 
 
@@ -75,7 +75,7 @@ class Conversation:
         user_profile = UserProfile.load(self.user_id).to_dict()
         messages = self.data["messages"]
 
-        response = Graph().invoke(messages, user_profile)
+        response = SimpleGenerationGraph().invoke(messages, user_profile)
 
         self.data["messages"].append(
             {

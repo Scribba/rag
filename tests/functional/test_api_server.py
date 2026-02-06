@@ -94,12 +94,12 @@ class TestApiServer:
         assert len(rows) == 3
 
     def test_messages(self, client: TestClient, monkeypatch):
-        from src.graph import Graph
+        from src.graphs.simple_generation_graph import SimpleGenerationGraph
 
         def fake_invoke(self, messages, user_profile):
             return "pong"
 
-        monkeypatch.setattr(Graph, "invoke", fake_invoke)
+        monkeypatch.setattr(SimpleGenerationGraph, "invoke", fake_invoke)
 
         user = client.post("/api/v1/users", json={"name": "Jan"}).json()
         user_id = user["id"]

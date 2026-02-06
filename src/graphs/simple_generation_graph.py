@@ -3,7 +3,8 @@ from typing import Any, cast
 from langgraph.graph import START, END, StateGraph
 from langchain.chat_models import init_chat_model
 
-from src.state import ConversationState
+from src.graphs.states import ConversationState
+from src.graphs.base_graph import BaseGraph
 
 
 def call_model(state: ConversationState) -> dict[str, Any]:
@@ -12,7 +13,7 @@ def call_model(state: ConversationState) -> dict[str, Any]:
     return {"response": response.content}
 
 
-class Graph:
+class SimpleGenerationGraph(BaseGraph):
     def __init__(self) -> None:
         builder = StateGraph(ConversationState)
         builder.add_node("generate", call_model)

@@ -4,7 +4,7 @@ from typing import Any, TypedDict, cast
 import requests
 import streamlit as st
 
-DEFAULT_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8001")
+DEFAULT_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8002")
 
 
 class MessagePayload(TypedDict, total=False):
