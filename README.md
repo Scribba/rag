@@ -39,3 +39,4 @@ Run locally to mirror CI:
 - Install dev tools: `uv sync --group dev`
 - Run tests: `uv run doit test`
 - Run mypy: `uv run mypy .`
+- See coverage (90% threshold): `uv run doit coverage`

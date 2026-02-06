@@ -15,6 +15,7 @@ dev = [
     "pre-commit>=3.7",
     "doit>=0.36",
     "pytest>=8.0",
+    "coverage>=7.4",
 ]
 
 [tool.mypy]
