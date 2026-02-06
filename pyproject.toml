@@ -20,6 +20,7 @@ dev = [
     "pytest>=8.3.0",
     "pre-commit>=3.7",
     "types-requests>=2.32.0",
+    "doit>=0.36",
 ]
 
 [tool.mypy]
