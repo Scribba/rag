@@ -1,10 +1,36 @@
 import os
-from typing import Any
+from typing import Any, TypedDict, cast
 
 import requests
 import streamlit as st
 
 DEFAULT_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8001")
+
+
+class MessagePayload(TypedDict, total=False):
+    role: str
+    content: str
+    timestamp: str
+
+
+class ConversationItem(TypedDict):
+    id: int
+    user_id: int
+    last_message: MessagePayload | None
+
+
+class UserPayload(TypedDict):
+    id: int
+    name: str
+
+
+class MessagesPayload(TypedDict):
+    conversation_id: int
+    messages: list[MessagePayload]
+
+
+class SendMessagePayload(MessagesPayload):
+    assistant: MessagePayload
 
 
 def init_state() -> None:
@@ -57,10 +83,16 @@ def api_request(
         return None
 
     try:
-        return response.json()
+        payload = response.json()
     except ValueError:
         st.error("API returned invalid JSON.")
         return None
+    if isinstance(payload, dict):
+        return cast(dict[str, Any], payload)
+    if isinstance(payload, list):
+        return cast(list[dict[str, Any]], payload)
+    st.error("API returned unexpected payload type.")
+    return None
 
 
 def load_conversations() -> None:
@@ -74,6 +106,9 @@ def load_conversations() -> None:
     )
     if data is None:
         return
+    if not isinstance(data, list):
+        st.error("Conversation list payload is invalid.")
+        return
     st.session_state["conversations"] = data
 
 
@@ -84,7 +119,11 @@ def load_messages(conversation_id: int) -> None:
     )
     if data is None:
         return
-    st.session_state["messages"] = data.get("messages", [])
+    if not isinstance(data, dict):
+        st.error("Messages payload is invalid.")
+        return
+    messages_payload = cast(MessagesPayload, data)
+    st.session_state["messages"] = messages_payload.get("messages", [])
     st.session_state["messages_loaded_for"] = conversation_id
 
 
@@ -98,8 +137,12 @@ def register_user(name: str) -> None:
     data = api_request("POST", "/api/v1/users", json={"name": name})
     if data is None:
         return
-    st.session_state["user_id"] = data["id"]
-    st.session_state["user_name"] = data["name"]
+    if not isinstance(data, dict):
+        st.error("User payload is invalid.")
+        return
+    user_payload = cast(UserPayload, data)
+    st.session_state["user_id"] = user_payload["id"]
+    st.session_state["user_name"] = user_payload["name"]
     load_conversations()
 
 
@@ -107,8 +150,12 @@ def login_user(user_id: int) -> None:
     data = api_request("GET", f"/api/v1/users/{user_id}")
     if data is None:
         return
-    st.session_state["user_id"] = data["id"]
-    st.session_state["user_name"] = data["name"]
+    if not isinstance(data, dict):
+        st.error("User payload is invalid.")
+        return
+    user_payload = cast(UserPayload, data)
+    st.session_state["user_id"] = user_payload["id"]
+    st.session_state["user_name"] = user_payload["name"]
     load_conversations()
 
 
@@ -119,7 +166,10 @@ def create_conversation() -> None:
     data = api_request("POST", "/api/v1/conversations", json={"user_id": user_id})
     if data is None:
         return
-    set_active_conversation(data["id"])
+    if not isinstance(data, dict):
+        st.error("Conversation payload is invalid.")
+        return
+    set_active_conversation(cast(int, data.get("id")))
     load_conversations()
 
 
@@ -134,7 +184,11 @@ def send_message(content: str) -> None:
     )
     if data is None:
         return
-    st.session_state["messages"] = data.get("messages", [])
+    if not isinstance(data, dict):
+        st.error("Message payload is invalid.")
+        return
+    send_payload = cast(SendMessagePayload, data)
+    st.session_state["messages"] = send_payload.get("messages", [])
     st.session_state["messages_loaded_for"] = conversation_id
     load_conversations()
 
@@ -187,7 +241,8 @@ def render_sidebar() -> None:
         st.sidebar.info("No conversations yet.")
         return
 
-    items_by_id = {item["id"]: item for item in conversations}
+    items_by_id = {cast(ConversationItem, item)["id"]: cast(ConversationItem, item)
+                   for item in conversations}
     options = list(items_by_id.keys())
     active_id = st.session_state["active_conversation_id"]
     index = options.index(active_id) if active_id in options else 0

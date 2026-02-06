@@ -16,7 +16,7 @@ class Conversation:
     id: Optional[int] = None
     data: dict[str, Any] = field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if "messages" not in self.data:
             self.data["messages"] = []
 
@@ -24,7 +24,12 @@ class Conversation:
         return self.data
 
     @classmethod
-    def from_dict(cls, user_id: int, data: dict[str, Any], id: Optional[int] = None):
+    def from_dict(
+        cls,
+        user_id: int,
+        data: dict[str, Any],
+        id: Optional[int] = None,
+    ) -> "Conversation":
         return cls(user_id=user_id, data=data, id=id)
 
     def save(self) -> int:
@@ -34,7 +39,10 @@ class Conversation:
                 result = conn.execute(
                     conversations.insert().values(user_id=self.user_id, data=self.to_dict())
                 )
-                self.id = result.inserted_primary_key[0]
+                inserted = result.inserted_primary_key
+                if not inserted:
+                    raise RuntimeError("Failed to insert conversation")
+                self.id = inserted[0]
             else:
                 conn.execute(
                     conversations.update()
@@ -44,7 +52,7 @@ class Conversation:
         return self.id
 
     @classmethod
-    def load(cls, conversation_id: int):
+    def load(cls, conversation_id: int) -> "Conversation":
         engine = get_engine()
         with engine.connect() as conn:
             row = conn.execute(
@@ -56,22 +64,26 @@ class Conversation:
             return cls.from_dict(row.user_id, row.data, id=conversation_id)
 
     def invoke(self, message: str) -> str:
-        self.data["messages"].append({
-            "role": "user",
-            "content": message,
-            "timestamp": datetime.utcnow().isoformat()
-        })
+        self.data["messages"].append(
+            {
+                "role": "user",
+                "content": message,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        )
 
         user_profile = UserProfile.load(self.user_id).to_dict()
         messages = self.data["messages"]
 
         response = Graph().invoke(messages, user_profile)
 
-        self.data["messages"].append({
-            "role": "assistant",
-            "content": response,
-            "timestamp": datetime.utcnow().isoformat()
-        })
+        self.data["messages"].append(
+            {
+                "role": "assistant",
+                "content": response,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        )
 
         self.save()
         return response

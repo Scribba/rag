@@ -1,5 +1,5 @@
 from dataclasses import dataclass, asdict
-from typing import Optional
+from typing import Optional, Any
 
 from sqlalchemy import select
 from sqlalchemy.engine import Engine
@@ -15,13 +15,13 @@ class UserProfile:
     # User ID - automatically assigned by database
     id: Optional[int] = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
         d.pop("id", None)
         return d
 
     @classmethod
-    def from_dict(cls, data: dict, id: Optional[int] = None) -> "UserProfile":
+    def from_dict(cls, data: dict[str, Any], id: Optional[int] = None) -> "UserProfile":
         return cls(**data, id=id)
 
     def save(self, engine: Engine | None = None) -> int:

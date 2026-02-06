@@ -115,6 +115,10 @@ def get_conversation(conversation_id: int) -> ConversationResponse:
         conversation = Conversation.load(conversation_id)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    if conversation.id is None:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
     return ConversationResponse(
         id=conversation.id,
         user_id=conversation.user_id,
@@ -153,6 +157,9 @@ def get_messages(conversation_id: int) -> MessagesResponse:
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
+    if conversation.id is None:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
     return MessagesResponse(
         conversation_id=conversation.id,
         messages=_as_message_list(conversation.data),
@@ -184,6 +191,9 @@ def send_message(conversation_id: int, payload: MessageCreate) -> SendMessageRes
     )
     if messages:
         assistant_message = messages[-1]
+
+    if conversation.id is None:
+        raise HTTPException(status_code=404, detail="Conversation not found")
 
     return SendMessageResponse(
         conversation_id=conversation.id,

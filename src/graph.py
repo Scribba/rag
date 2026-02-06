@@ -1,24 +1,26 @@
+from typing import Any, cast
+
 from langgraph.graph import START, END, StateGraph
 from langchain.chat_models import init_chat_model
 
 from src.state import ConversationState
 
 
-def call_model(state: ConversationState):
+def call_model(state: ConversationState) -> dict[str, Any]:
     model = init_chat_model("gpt-4.1-mini")
     response = model.invoke(state["messages"])
     return {"response": response.content}
 
 
 class Graph:
-    def __init__(self):
+    def __init__(self) -> None:
         builder = StateGraph(ConversationState)
         builder.add_node("generate", call_model)
         builder.add_edge(START, "generate")
         builder.add_edge("generate", END)
-        self.graph = builder.compile()
+        self.graph: Any = builder.compile()
 
-    def invoke(self, messages: list[dict], user_profile: dict) -> str:
+    def invoke(self, messages: list[dict[str, str]], user_profile: dict[str, Any]) -> str:
         initial_state = ConversationState(messages=messages, user_profile=user_profile)
-        result = self.graph.invoke(initial_state)
-        return result["response"]
+        result = cast(dict[str, Any], self.graph.invoke(initial_state))
+        return cast(str, result["response"])
