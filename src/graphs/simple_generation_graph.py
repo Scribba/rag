@@ -30,16 +30,3 @@ class SimpleGenerationGraph(BaseGraph):
         if not isinstance(response, str):
             raise ValueError("Graph response payload is missing a response string.")
         return response
-
-
-if __name__ == "__main__":
-    from dotenv import load_dotenv
-
-    load_dotenv("/Users/wnowogor/PycharmProjects/rag/.env")
-
-    messages = [{"content": "Hello World!", "role": "user"}]
-    user_profile = {
-        "name": "Witek",
-    }
-
-    SimpleGenerationGraph().invoke(messages, user_profile)
